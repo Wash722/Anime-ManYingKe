@@ -1,0 +1,55 @@
+name: manyinke
+description: "A new Flutter project."
+publish_to: 'none' 
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # --- 核心依赖 ---
+  cupertino_icons: ^1.0.8
+  http: ^1.2.0                 # 【保留】Bangumi 和 金鹰服务 都在用
+  shared_preferences: ^2.2.0     # 【保留】用于历史记录
+
+  # --- 新版播放器引擎 ---
+  media_kit: ^1.1.10             # 【保留】主要包装
+  media_kit_video: ^1.2.4        # 【保留】用于视频渲染
+  media_kit_libs_video: ^1.0.4   # 【保留】原生视频依赖项
+
+  # 【删除】以下库已不再需要
+  # video_player: ...
+  # chewie: ...
+  # dio: ...
+  # cookie_jar: ...
+  # dio_cookie_manager: ...
+  # chinese_converter / flutter_chinese_convert / chinese_conversion: ...
+  # html: ... (爬虫用的，也可以删了)
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  
+  flutter_lints: ^3.0.0
+  
+  # 【保留】这两个工具在我们配置项目时非常有用
+  flutter_launcher_icons: ^0.13.1
+  change_app_package_name: ^1.1.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icon/ # 把图标文件夹也明确加上
+
+# APP 图标生成配置
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#D55066"
