@@ -7,6 +7,7 @@ import '../services/jinying_service.dart';
 
 class AnimeDetailPage extends StatefulWidget {
   final AnimeModel anime;
+
   const AnimeDetailPage({super.key, required this.anime});
 
   @override
@@ -16,17 +17,17 @@ class AnimeDetailPage extends StatefulWidget {
 class _AnimeDetailPageState extends State<AnimeDetailPage> {
   final StorageService _storage = StorageService();
   final JinyingService _jinyingService = JinyingService();
-  
+
   late final Player _player = Player();
   late final VideoController _videoController;
 
   List<Map<String, String>> _episodeList = [];
   int _currentEpisodeIndex = 0;
   bool _isLoadingVideo = true;
-  String _loadingMessage = "视频加载中..."; 
+  String _loadingMessage = "视频加载中...";
 
   final int _inlineEpisodeCount = 10;
-  
+
   // 【核心修复】_playerContext 已被移除
 
   @override
@@ -43,9 +44,9 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
     super.dispose();
   }
 
-  Future<void> _searchAndPlay() async {
+  Future<void> _searchAndPlay({String? name}) async {
     int? vodId = await _jinyingService.searchVodId(
-      widget.anime.displayName,
+      name ?? widget.anime.displayName,
       originalName: widget.anime.name,
     );
 
@@ -56,7 +57,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
 
     if (!mounted) return;
     final episodes = await _jinyingService.fetchPlayableEpisodes(vodId);
-    
+
     if (episodes.isNotEmpty) {
       if (!mounted) return;
       setState(() {
@@ -75,7 +76,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
       _isLoadingVideo = true;
       _loadingMessage = "视频加载中...";
     });
-    
+
     try {
       await _player.open(Media(finalUrl), play: true);
       if (mounted) {
@@ -102,7 +103,7 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
       _initializePlayer(_episodeList[index]['url']!);
     }
   }
-  
+
   void _showAllEpisodes() {
     showModalBottomSheet(
       context: context,
@@ -122,8 +123,12 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("选择集数 (${_episodeList.length})", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+                    Text("选择集数 (${_episodeList.length})",
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(ctx)),
                   ],
                 ),
               ),
@@ -131,7 +136,10 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                 child: GridView.builder(
                   padding: const EdgeInsets.all(16),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4, childAspectRatio: 2.0, mainAxisSpacing: 12, crossAxisSpacing: 12,
+                    crossAxisCount: 4,
+                    childAspectRatio: 2.0,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
                   ),
                   itemCount: _episodeList.length,
                   itemBuilder: (context, index) {
@@ -144,15 +152,24 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                       child: Container(
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFFD55066).withValues(alpha: 0.1) : Colors.grey[100],
+                          color: isSelected
+                              ? const Color(0xFFD55066).withValues(alpha: 0.1)
+                              : Colors.grey[100],
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: isSelected ? const Color(0xFFD55066) : Colors.grey[300]!),
+                          border: Border.all(
+                              color: isSelected
+                                  ? const Color(0xFFD55066)
+                                  : Colors.grey[300]!),
                         ),
                         child: Text(
                           _episodeList[index]['name']!,
                           style: TextStyle(
-                            color: isSelected ? const Color(0xFFD55066) : Colors.black87,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected
+                                ? const Color(0xFFD55066)
+                                : Colors.black87,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                             fontSize: 12,
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -172,7 +189,8 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
   @override
   Widget build(BuildContext context) {
     const Color themeColor = Color(0xFFD55066);
-    
+    final TextEditingController searchController = TextEditingController();
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -186,26 +204,22 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                 child: _isLoadingVideo
                     ? Center(
                         child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min, 
-                            children: [
-                              const CircularProgressIndicator(color: Colors.white), 
-                              const SizedBox(height: 16), 
-                              Text(
-                                _loadingMessage,
-                                style: TextStyle(
-                                  color: _loadingMessage.contains("失败")
-                                      ? Colors.red[300]!
-                                      : Colors.white70,
-                                  fontSize: 12
-                                ), 
-                                textAlign: TextAlign.center,
-                              )
-                            ]
-                          ),
-                        )
-                      )
+                        padding: const EdgeInsets.all(8.0),
+                        child:
+                            Column(mainAxisSize: MainAxisSize.min, children: [
+                          const CircularProgressIndicator(color: Colors.white),
+                          const SizedBox(height: 16),
+                          Text(
+                            _loadingMessage,
+                            style: TextStyle(
+                                color: _loadingMessage.contains("失败")
+                                    ? Colors.red[300]!
+                                    : Colors.white70,
+                                fontSize: 12),
+                            textAlign: TextAlign.center,
+                          )
+                        ]),
+                      ))
                     : Video(controller: _videoController),
               ),
             ),
@@ -216,21 +230,75 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(widget.anime.displayName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(widget.anime.displayName,
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
+                      ),
+                      if (!_isLoadingVideo)
+                        SizedBox(
+                          width: 200,
+                          child: TextField(
+                            onSubmitted: (value) {
+                              if (value.isNotEmpty) {
+                                _searchAndPlay(name: value);
+                              }
+                            },
+                            controller: searchController,
+                            decoration: InputDecoration(
+                              hintText: '手动搜索内容',
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              suffixIcon: IconButton(
+                                icon: const Icon(Icons.search, size: 20),
+                                onPressed: () {
+                                  if (searchController.text.isNotEmpty) {
+                                    _searchAndPlay(name: searchController.text);
+                                  }
+                                },
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide:
+                                    const BorderSide(color: Colors.grey),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide:
+                                    BorderSide(color: Colors.grey[300]!),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide:
+                                    const BorderSide(color: Color(0xFFD55066)),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                   const SizedBox(height: 20),
                   const Divider(height: 1, color: Colors.black12),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("选集", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      const Text("选集",
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
                       if (_episodeList.length > _inlineEpisodeCount)
                         GestureDetector(
                           onTap: _showAllEpisodes,
                           child: Row(
                             children: [
-                              Text("更多", style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-                              const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey),
+                              Text("更多",
+                                  style: TextStyle(
+                                      color: Colors.grey[500], fontSize: 12)),
+                              const Icon(Icons.arrow_forward_ios,
+                                  size: 12, color: Colors.grey),
                             ],
                           ),
                         ),
@@ -241,35 +309,41 @@ class _AnimeDetailPageState extends State<AnimeDetailPage> {
                       // 【核心修改】把“暂无选集信息”改成更准确的提示
                       ? Center(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10), 
-                            child: Text(
-                              _isLoadingVideo ? "正在获取剧集..." : "加载失败", 
-                              style: const TextStyle(color: Colors.grey)
-                            )
-                          )
-                        )
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              child: Text(
+                                  _isLoadingVideo ? "正在获取剧集..." : "加载失败",
+                                  style: const TextStyle(color: Colors.grey))))
                       : SizedBox(
                           height: 40,
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
-                            itemCount: _episodeList.length > _inlineEpisodeCount ? _inlineEpisodeCount : _episodeList.length,
+                            itemCount: _episodeList.length > _inlineEpisodeCount
+                                ? _inlineEpisodeCount
+                                : _episodeList.length,
                             itemBuilder: (context, index) {
                               final isSelected = index == _currentEpisodeIndex;
                               return GestureDetector(
                                 onTap: () => _changeEpisode(index),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
                                   margin: const EdgeInsets.only(right: 10),
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
-                                    color: isSelected ? themeColor.withValues(alpha: 0.1) : Colors.grey[100],
+                                    color: isSelected
+                                        ? themeColor.withValues(alpha: 0.1)
+                                        : Colors.grey[100],
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
                                     _episodeList[index]['name']!,
                                     style: TextStyle(
-                                      color: isSelected ? themeColor : Colors.black87,
-                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                      color: isSelected
+                                          ? themeColor
+                                          : Colors.black87,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
                                     ),
                                   ),
                                 ),
